@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 
 const myNumber = ref<string[]>([''])
 const duration = ref<number>(0)
@@ -7,6 +7,7 @@ const video = ref<HTMLVideoElement>()
 const canvas = ref<HTMLElement>()
 const preview = ref<string>('')
 const capture = async () => {
+  isProgress.value = true;
   const startTime = Date.now(); // 처리 시작 시간 측정
 
   const _video = video.value as HTMLVideoElement;
@@ -46,6 +47,7 @@ const capture = async () => {
     const _duration = endTime - startTime; // 처리 시간 계산 (밀리초 단위)
     console.log(`Processing time: ${_duration} ms`); // 처리 시간 출력
     duration.value = _duration;
+    isProgress.value = false;
   })
 }
 
@@ -164,10 +166,23 @@ onMounted(() => {
       }
     });
 })
+
+// const isPlaying = computed(() => {
+//   const _video = video.value as HTMLVideoElement;
+//   if (_video) {
+//     return !_video.paused && !_video.ended && _video.readyState > 2;
+//   }
+//   return false;
+// })
+
+const isPlaying = ref(false)
+const isProgress = ref(false)
+
 const playVideo = () => {
   const _video = video.value as HTMLVideoElement;
   if (_video) {
     _video.play().catch(e => console.error('Error playing the video:', e));
+    isPlaying.value = true;
   }
 }
 
@@ -175,32 +190,50 @@ const pauseVideo = () => {
   const _video = video.value as HTMLVideoElement;
   if (_video) {
     _video.pause();
+    isPlaying.value = false;
   }
 }
+// url placeholder 320x240
+// const url = 'https://placekitten.com/320/240'
 </script>
 
 <template>
   <div class="flex flex-col bg-slate-100 rounded justify-center items-center">
     <p>{{ resolution }}</p>
-    <video playsinline class="mt-4 rounded-xl w-full max-w-xs h-auto" ref="video" autoplay muted></video>
-    <div class="flex space-x-2 mt-4">
-      <button class="mx-auto text-white rounded bg-blue-500 hover:bg-blue-600 p-2 text-lg font-bold font-serif"
-        @click="playVideo">Play</button>
-      <button class="mx-auto text-white rounded bg-red-500 hover:bg-red-600 p-2 text-lg font-bold font-serif"
-        @click="pauseVideo">Pause</button>
+    <div class="relative">
+      <video playsinline class="border-2 rounded-xl w-full max-w-xs h-auto" ref="video" muted></video>
+      <!-- <img src="https://via.placeholder.com/320x240" alt="Kitten" class="rounded-xl w-full max-w-xs h-auto" /> -->
+      <div class="absolute bottom-1 flex w-full">
+        <button v-if="!isPlaying"
+          class="mx-auto text-white rounded-full bg-green-500 hover:bg-green-600 w-8 h-8 font-bold font-serif"
+          @click="playVideo"></button>
+        <button v-else class="mx-auto text-white rounded-full bg-red-500 hover:bg-red-600 w-8 h-8 font-bold font-serif"
+          @click="pauseVideo"></button>
+
+      </div>
     </div>
-    <button class="mt-4 mx-auto text-white rounded bg-blue-500 hover:bg-blue-600 p-4 text-2xl font-bold font-serif"
+    <button v-if="isPlaying"
+      class="mx-auto text-white rounded bg-blue-500 hover:bg-blue-600 p-2 text-lg font-bold font-serif"
       @click="capture">Capture</button>
     <canvas ref="canvas" width="320" height="240" style="display: none;"></canvas>
     <!-- 이미지 미리보기를 위한 img 태그 추가 -->
-    <img v-if="preview.length > 0" :src="preview" alt="Captured image" class="mt-4 rounded-xl grayscale" />
-    <div>
-      <p class="text-xl font-bold">Car plate number:</p>
-      <ul class="pl-4">
-        <li v-if="myNumber.length === 0">No results</li>
-        <li v-else v-for="number in myNumber" :key="number">{{ number }}</li>
-      </ul>
-      <p class="text-xl font-bold">Duration : {{ duration }} ms</p>
+    <div v-if="!isProgress && preview.length > 0">
+      <img v-if="preview.length > 0" :src="preview" alt="Captured image"
+        class="mt-4 rounded-xl grayscale  w-full max-w-xs h-auto" />
+      <div>
+        <p class="text-xl font-bold">Car plate number:</p>
+        <ul class="pl-4">
+          <li v-if="myNumber.length === 0">No results</li>
+          <li v-else v-for="number in myNumber" :key="number">{{ number }}</li>
+        </ul>
+        <p class="text-xl font-bold">Duration : {{ duration }} ms</p>
+      </div>
+    </div>
+  </div>
+  <!-- modal inprogress -->
+  <div v-if="isProgress" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div class="bg-white p-4 rounded-lg">
+      <p class="text-xl font-bold">Processing...</p>
     </div>
   </div>
 </template>
