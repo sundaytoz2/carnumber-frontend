@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 
-const myNumber = ref('')
+const myNumber = ref<string[]>([''])
 const duration = ref<number>(0)
 const video = ref<HTMLElement>()
 const canvas = ref<HTMLElement>()
+const preview = ref<string>('')
 const capture = async () => {
   const startTime = Date.now(); // 처리 시작 시간 측정
 
@@ -18,6 +19,8 @@ const capture = async () => {
     return;
   }
   ctx.drawImage(_video, 0, 0, _canvas.width, _canvas.height);
+
+  preview.value = _canvas.toDataURL('image/png');
   console.log(`width: ${_canvas.width}, height: ${_canvas.height}`);
   _canvas.toBlob(async blob => {
     const formData = new FormData();
@@ -40,6 +43,29 @@ const capture = async () => {
   })
 }
 
+function extractOcrResults(input: string): string[] {
+  // 정규 표현식을 수정하여 문자열에서 텍스트와 신뢰도 점수를 정확히 찾아냅니다.
+  const regex = /\[\[\[.*?\]\], \('([^']+)', (\d+\.\d+)\)\]/g;
+  let match;
+  const results = [];
+
+  // 문자열에서 모든 일치 항목을 찾습니다.
+  while ((match = regex.exec(input))) {
+    // 텍스트와 신뢰도 점수를 추출하여 배열에 저장합니다.
+    results.push(`('${match[1]}', ${match[2]})`);
+  }
+
+  return results;
+}
+
+// 예제 입력
+const inputText = "[2024/03/24 17:23:40] ppocr INFO: [[[103.0, 144.0], [132.0, 144.0], [132.0, 155.0], [103.0, 155.0]], ('45어:', 0.9024415612220764)]\n" +
+  "[2024/03/24 17:23:40] ppocr INFO: [[[128.0, 144.0], [162.0, 144.0], [162.0, 155.0], [128.0, 155.0]], ('2381', 0.9988919496536255)]";
+
+const results = extractOcrResults(inputText);
+console.log(results);
+myNumber.value = results;
+
 onMounted(() => {
   navigator.mediaDevices.getUserMedia({ video: true })
     .then(stream => {
@@ -56,9 +82,14 @@ onMounted(() => {
     <button class="mt-4 mx-auto text-white rounded bg-blue-500 hover:bg-blue-600 p-4 text-2xl font-bold font-serif"
       @click="capture">Capture</button>
     <canvas ref="canvas" width="320" height="240" style="display: none;"></canvas>
+    <!-- 이미지 미리보기를 위한 img 태그 추가 -->
+    <img v-if="preview.length > 0" :src="preview" alt="Captured image" class="mt-4" />
     <div>
-      <p>Car plate number: {{ myNumber }}</p>
-      <p>Duration : {{ duration }}</p>
+      <p class="text-xl font-bold">Car plate number:</p>
+      <ul class="pl-4">
+        <li v-for="number in myNumber" :key="number">{{ number }}</li>
+      </ul>
+      <p class="text-xl font-bold">Duration : {{ duration }} ms</p>
     </div>
   </div>
 </template>
