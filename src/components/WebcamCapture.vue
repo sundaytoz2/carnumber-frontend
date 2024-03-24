@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 
+const myNumber = ref('')
 const duration = ref<number>(0)
 const video = ref<HTMLElement>()
 const canvas = ref<HTMLElement>()
@@ -9,10 +10,20 @@ const capture = async () => {
 
   const _video = video.value as HTMLVideoElement;
   const _canvas = canvas.value as HTMLCanvasElement;
-  _canvas.getContext('2d').drawImage(_video, 0, 0, _canvas.width, _canvas.height);
+  if (!_video || !_canvas) {
+    return;
+  }
+  const ctx = _canvas.getContext('2d');
+  if (!ctx) {
+    return;
+  }
+  ctx.drawImage(_video, 0, 0, _canvas.width, _canvas.height);
   console.log(`width: ${_canvas.width}, height: ${_canvas.height}`);
   _canvas.toBlob(async blob => {
     const formData = new FormData();
+    if (!blob) {
+      return;
+    }
     formData.append('file', blob);
 
     const response = await fetch('http://localhost:8000/upload/', {
@@ -31,7 +42,9 @@ const capture = async () => {
 onMounted(() => {
   navigator.mediaDevices.getUserMedia({ video: true })
     .then(stream => {
-      video.value.srcObject = stream;
+      if (video.value instanceof HTMLVideoElement) {
+        video.value.srcObject = stream;
+      }
     });
 })
 </script>
@@ -42,7 +55,10 @@ onMounted(() => {
     <button class="mt-4 mx-auto text-white rounded bg-blue-500 hover:bg-blue-600 p-4 text-2xl font-bold font-serif"
       @click="capture">Capture</button>
     <canvas ref="canvas" width="320" height="240" style="display: none;"></canvas>
-    <p>Duration : {{ duration }}</p>
+    <div>
+      <p>Car plate number: {{ myNumber }}</p>
+      <p>Duration : {{ duration }}</p>
+    </div>
   </div>
 </template>
 
