@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 
+const duration = ref<number>(0)
 const video = ref<HTMLElement>()
 const canvas = ref<HTMLElement>()
 const capture = async () => {
+  const startTime = Date.now(); // 처리 시작 시간 측정
+
   const _video = video.value as HTMLVideoElement;
   const _canvas = canvas.value as HTMLCanvasElement;
   _canvas.getContext('2d').drawImage(_video, 0, 0, _canvas.width, _canvas.height);
@@ -18,6 +21,10 @@ const capture = async () => {
     });
     const result = await response.json();
     console.log(result);
+
+    const endTime = Date.now(); // 처리 완료 시간 측정
+    const duration = endTime - startTime; // 처리 시간 계산 (밀리초 단위)
+    console.log(`Processing time: ${duration} ms`); // 처리 시간 출력
   })
 }
 
@@ -31,10 +38,11 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col bg-slate-100 rounded justify-center items-center">
-    <video ref="video" width="640" height="480" autoplay></video>
+    <video ref="video" width="320" height="240" autoplay></video>
     <button class="mt-4 mx-auto text-white rounded bg-blue-500 hover:bg-blue-600 p-4 text-2xl font-bold font-serif"
       @click="capture">Capture</button>
-    <canvas ref="canvas" width="640" height="480" style="display: none;"></canvas>
+    <canvas ref="canvas" width="320" height="240" style="display: none;"></canvas>
+    <p>Duration : {{ duration }}</p>
   </div>
 </template>
 
