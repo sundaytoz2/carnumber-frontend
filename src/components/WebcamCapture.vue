@@ -36,6 +36,10 @@ const capture = async () => {
     const result = await response.json();
     console.log(result);
 
+    const results = extractOcrResults(result);
+    console.log(results);
+    myNumber.value = results;
+
     const endTime = Date.now(); // 처리 완료 시간 측정
     const _duration = endTime - startTime; // 처리 시간 계산 (밀리초 단위)
     console.log(`Processing time: ${_duration} ms`); // 처리 시간 출력
@@ -78,16 +82,17 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col bg-slate-100 rounded justify-center items-center">
-    <video ref="video" width="320" height="240" autoplay></video>
+    <video class="mt-4 rounded-xl" ref="video" width="320" height="240" autoplay></video>
     <button class="mt-4 mx-auto text-white rounded bg-blue-500 hover:bg-blue-600 p-4 text-2xl font-bold font-serif"
       @click="capture">Capture</button>
     <canvas ref="canvas" width="320" height="240" style="display: none;"></canvas>
     <!-- 이미지 미리보기를 위한 img 태그 추가 -->
-    <img v-if="preview.length > 0" :src="preview" alt="Captured image" class="mt-4" />
+    <img v-if="preview.length > 0" :src="preview" alt="Captured image" class="mt-4 rounded-xl grayscale" />
     <div>
       <p class="text-xl font-bold">Car plate number:</p>
       <ul class="pl-4">
-        <li v-for="number in myNumber" :key="number">{{ number }}</li>
+        <li v-if="myNumber.length === 0">No results</li>
+        <li v-else v-for="number in myNumber" :key="number">{{ number }}</li>
       </ul>
       <p class="text-xl font-bold">Duration : {{ duration }} ms</p>
     </div>
