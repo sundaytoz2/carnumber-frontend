@@ -1,5 +1,5 @@
 [[redirects]]
   from = "/api/*"
-  to = "http://choigawoon.site:8000/:splat"
+  to = "https://choigawoon.site:8000/:splat"
   status = 200
   force = true
