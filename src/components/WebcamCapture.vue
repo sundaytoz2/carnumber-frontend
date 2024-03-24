@@ -6,7 +6,34 @@ const facingMode = ref('user'); // 'user'는 전면 카메라, 'environment'는 
 // facingMode를 전환하는 함수
 function toggleCamera() {
   facingMode.value = facingMode.value === 'user' ? 'environment' : 'user';
+  console.log(`facingMode: ${facingMode.value}`)
   // 카메라 전환 로직...
+  if (video.value && video.value.srcObject) {
+    stopMediaTracks(video.value.srcObject as MediaStream);
+  }
+
+  navigator.mediaDevices.getUserMedia({
+    video: {
+      width: { min: 1280, ideal: 1920, max: 2560 },
+      height: { min: 720, ideal: 1080, max: 1440 },
+      facingMode: facingMode.value
+    }
+  })
+    .then(stream => {
+      if (video.value instanceof HTMLVideoElement) {
+        video.value.srcObject = stream;
+      }
+    })
+    .catch(error => {
+      console.error('Error switching camera:', error);
+    });
+}
+
+// 기존 스트림을 종료하는 함수
+function stopMediaTracks(stream: MediaStream) {
+  stream.getTracks().forEach(track => {
+    track.stop();
+  });
 }
 
 const myNumber = ref<string[]>([''])
@@ -209,7 +236,7 @@ const pauseVideo = () => {
   <div class="flex flex-col bg-slate-100 rounded justify-center items-center">
     <p>{{ resolution }}</p>
     <div class="relative">
-      <video playsinline class="border-2 rounded-xl w-full max-w-xs h-auto" ref="video" muted></video>
+      <video playsinline class="border-2 rounded-xl w-full max-w-xs h-auto max-h-xs" ref="video" muted></video>
       <!-- <img src="https://via.placeholder.com/320x240" alt="Kitten" class="rounded-xl w-full max-w-xs h-auto" /> -->
       <div class="absolute bottom-1 flex w-full">
         <button v-if="!isPlaying"
