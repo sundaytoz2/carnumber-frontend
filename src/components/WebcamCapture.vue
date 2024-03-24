@@ -22,6 +22,28 @@ function toggleCamera() {
     .then(stream => {
       if (video.value instanceof HTMLVideoElement) {
         video.value.srcObject = stream;
+        // 스트림으로부터 실제 비디오 해상도를 가져옵니다.
+        const track = stream.getVideoTracks()[0];
+        const settings = track.getSettings();
+        if (!settings) {
+          return;
+        }
+        const actualWidth = settings.width;
+        const actualHeight = settings.height;
+
+        resolution.value = `${actualWidth}x${actualHeight}`;
+        console.log(`Actual video resolution: ${actualWidth}x${actualHeight}`)
+        if (isPlaying.value) {
+          console.log('Restarting the video stream...');
+          playVideo();
+        }
+        // check if mobile
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (!isMobile) {
+          return;
+        }
+
+
       }
     })
     .catch(error => {
@@ -181,23 +203,11 @@ onMounted(() => {
         resolution.value = `${actualWidth}x${actualHeight}`;
         console.log(`Actual video resolution: ${actualWidth}x${actualHeight}`)
 
-        // <video> 요소의 크기를 실제 비디오 해상도에 맞춰 조정합니다.
-        if (!video.value) {
-          return;
-        }
-
         // check if mobile
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         if (!isMobile) {
           return;
         }
-
-        // if (actualWidth) {
-        //   video.value.width = actualWidth;
-        // }
-        // if (actualHeight) {
-        //   video.value.height = actualHeight;
-        // }
       }
     });
 })
