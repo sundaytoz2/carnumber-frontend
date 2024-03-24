@@ -30,7 +30,7 @@ const capture = async () => {
     formData.append('file', blob);
 
     // const url = '/api/upload'
-    const url = '/api/upload'
+    const url = 'https://choigawoon.site/api/upload'
     const response = await fetch(url, {
       method: 'POST',
       body: formData

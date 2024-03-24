@@ -23,9 +23,9 @@ export default defineConfig({
     proxy: {
       // API요청을 프록시할 링크
       '/api': {
-        target: 'http://choigawoon.site:8000',
+        target: 'https://choigawoon.site/api',
         changeOrigin: true,
-        secure: false,
+        secure: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
