@@ -36,6 +36,7 @@ const capture = async () => {
     const endTime = Date.now(); // 처리 완료 시간 측정
     const duration = endTime - startTime; // 처리 시간 계산 (밀리초 단위)
     console.log(`Processing time: ${duration} ms`); // 처리 시간 출력
+    duration.value = duration;
   })
 }
 
