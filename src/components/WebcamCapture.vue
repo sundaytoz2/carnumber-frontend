@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 
+const facingMode = ref('user'); // 'user'는 전면 카메라, 'environment'는 후면 카메라
+
+// facingMode를 전환하는 함수
+function toggleCamera() {
+  facingMode.value = facingMode.value === 'user' ? 'environment' : 'user';
+  // 카메라 전환 로직...
+}
+
 const myNumber = ref<string[]>([''])
 const duration = ref<number>(0)
 const video = ref<HTMLVideoElement>()
@@ -205,11 +213,16 @@ const pauseVideo = () => {
       <!-- <img src="https://via.placeholder.com/320x240" alt="Kitten" class="rounded-xl w-full max-w-xs h-auto" /> -->
       <div class="absolute bottom-1 flex w-full">
         <button v-if="!isPlaying"
-          class="mx-auto text-white rounded-full bg-green-500 hover:bg-green-600 w-8 h-8 font-bold font-serif"
+          class="mx-auto text-white rounded-full bg-green-500 hover:bg-green-600 w-8 h-8 font-bold font-serif opacity-50"
           @click="playVideo"></button>
-        <button v-else class="mx-auto text-white rounded-full bg-red-500 hover:bg-red-600 w-8 h-8 font-bold font-serif"
+        <button v-else
+          class="mx-auto text-white rounded-full bg-red-500 hover:bg-red-600 w-8 h-8 font-bold font-serif  opacity-50"
           @click="pauseVideo"></button>
-
+      </div>
+      <div class="absolute top-1 right-1 flex" v-if="isPlaying">
+        <button
+          class="mx-auto text-white rounded-full bg-slate-500 hover:bg-slate-600 w-8 h-8 font-bold font-serif opacity-50"
+          @click="toggleCamera"></button>
       </div>
     </div>
     <button v-if="isPlaying"
