@@ -141,7 +141,7 @@ const pauseVideo = () => {
 <template>
   <div class="flex flex-col bg-slate-100 rounded justify-center items-center">
     <p>{{ resolution }}</p>
-    <video class="mt-4 rounded-xl" ref="video" width="320" height="240" autoplay></video>
+    <video playsinline class="mt-4 rounded-xl" ref="video" width="320" height="240" autoplay muted></video>
     <div class="flex space-x-2 mt-4">
       <button class="mx-auto text-white rounded bg-blue-500 hover:bg-blue-600 p-2 text-lg font-bold font-serif"
         @click="playVideo">Play</button>
