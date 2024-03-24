@@ -3,6 +3,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
+import { execSync } from 'node:child_process'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -10,6 +11,9 @@ export default defineConfig({
   // https://chat.openai.com/share/4fbfe114-d077-426a-9801-881df8465e83
   // base: '/aivera/',
   plugins: [vue(), vueJsx()],
+  define: {
+    __GIT_SHA__: JSON.stringify(execSync('git rev-parse --short HEAD').toString().trim())
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
