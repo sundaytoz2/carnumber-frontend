@@ -58,10 +58,15 @@ function stopMediaTracks(stream: MediaStream) {
   });
 }
 
+const MAX_WIDTH = 640;
+const MAX_HEIGHT = 640;
+
 const myNumber = ref<string[]>([''])
 const duration = ref<number>(0)
 const video = ref<HTMLVideoElement>()
 const canvas = ref<HTMLElement>()
+const videoWidth = ref(320);
+const videoHeight = ref(240);
 const preview = ref<string>('')
 const capture = async () => {
   isProgress.value = true;
@@ -76,7 +81,8 @@ const capture = async () => {
   if (!ctx) {
     return;
   }
-  ctx.drawImage(_video, 0, 0, _canvas.width, _canvas.height);
+  // ctx.drawImage(_video, 0, 0, _canvas.width, _canvas.height);
+  ctx.drawImage(_video, 0, 0, videoWidth.value, videoHeight.value);
 
   preview.value = _canvas.toDataURL('image/png');
   console.log(`width: ${_canvas.width}, height: ${_canvas.height}`);
@@ -203,6 +209,20 @@ onMounted(() => {
         resolution.value = `${actualWidth}x${actualHeight}`;
         console.log(`Actual video resolution: ${actualWidth}x${actualHeight}`)
 
+        const _video = video.value as HTMLVideoElement;
+        video.value.addEventListener('loadedmetadata', () => {
+          // 비디오의 가로 세로 비율을 계산합니다.
+          const aspectRatio = _video.videoWidth / _video.videoHeight;
+
+          // _canvas의 너비를 비디오와 동일하게 설정하고, 높이를 비율에 따라 조정합니다.
+          // 너비와 높이를 최대값으로 제한합니다.
+          videoWidth.value = Math.min(_video.videoWidth, MAX_WIDTH);
+          videoHeight.value = Math.min(_video.videoHeight, MAX_HEIGHT, videoWidth.value / aspectRatio);
+          console.log(`videoWidth: ${videoWidth.value}, videoHeight: ${videoHeight.value}`)
+        });
+
+
+
         // check if mobile
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         if (!isMobile) {
@@ -265,7 +285,7 @@ const pauseVideo = () => {
     <button v-if="isPlaying"
       class="mx-auto text-white rounded bg-blue-500 hover:bg-blue-600 p-2 text-lg font-bold font-serif"
       @click="capture">Capture</button>
-    <canvas ref="canvas" width="320" height="240" style="display: none;"></canvas>
+    <canvas ref="canvas" :width="videoWidth" :height="videoHeight" style="display: none;"></canvas>
     <!-- 이미지 미리보기를 위한 img 태그 추가 -->
     <div v-if="!isProgress && preview.length > 0">
       <img v-if="preview.length > 0" :src="preview" alt="Captured image"
