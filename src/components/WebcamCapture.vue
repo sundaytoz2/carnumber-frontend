@@ -109,7 +109,7 @@ const capture = async () => {
       const results = data.result[0].map((item: any) => {
         const predictArray: any[] = item[1];
         // string join predictArray with ,
-        return predictArray.join('')
+        return predictArray.join(',')
       })
       myNumber.value = results;
     } finally {
