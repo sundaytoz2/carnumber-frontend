@@ -100,17 +100,25 @@ const capture = async () => {
       body: formData
     });
     const data = await response.json();
-    console.log(data);
+    try {
+      console.log(data.result[0]);
 
-    const results = extractOcrResults(data.result);
-    console.log(results);
-    myNumber.value = results;
+      // const results = extractOcrResults(data.result);
+      // console.log(results);
 
-    const endTime = Date.now(); // 처리 완료 시간 측정
-    const _duration = endTime - startTime; // 처리 시간 계산 (밀리초 단위)
-    console.log(`Processing time: ${_duration} ms`); // 처리 시간 출력
-    duration.value = _duration;
-    isProgress.value = false;
+      const results = data.result[0].map((item: any) => {
+        const predictArray: any[] = item[1];
+        // string join predictArray with ,
+        return predictArray.join('')
+      })
+      myNumber.value = results;
+    } finally {
+      const endTime = Date.now(); // 처리 완료 시간 측정
+      const _duration = endTime - startTime; // 처리 시간 계산 (밀리초 단위)
+      console.log(`Processing time: ${_duration} ms`); // 처리 시간 출력
+      duration.value = _duration;
+      isProgress.value = false;
+    }
   })
 }
 
@@ -290,7 +298,7 @@ const pauseVideo = () => {
     <div v-if="!isProgress && preview.length > 0">
       <img v-if="preview.length > 0" :src="preview" alt="Captured image"
         class="mt-4 rounded-xl grayscale  w-full max-w-xs h-auto" />
-      <div>
+      <div class="h-64 overflow-y-auto">
         <p class="text-xl font-bold">Car plate number:</p>
         <ul class="pl-4">
           <li v-if="myNumber.length === 0">No results</li>
